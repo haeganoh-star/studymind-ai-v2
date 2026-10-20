@@ -1,1 +1,320 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyMind AI 2.0</title>
+<style>
+:root{--bg:#08080d;--panel:#12121c;--gold:#f5c451;--purple:#a78bfa;--muted:#9292a8;--border:#29293a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#f6f4ff;font-family:Inter,Arial,sans-serif;min-height:100vh}
+button,input,textarea{font:inherit}
+button{cursor:pointer;transition:.2s}
+button:hover{filter:brightness(1.13);transform:translateY(-1px)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--purple);outline-offset:3px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#0d0d15;border-right:1px solid var(--border);padding:22px 16px;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px}
+.logo{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),#b67c28);color:#161016;font-size:22px}
+.brand span{color:var(--gold)}
+.new-chat,.nav-btn{width:100%;border:1px solid var(--border);background:var(--panel);color:#eeeafc;padding:12px;border-radius:12px;text-align:left}
+.nav-btn{border:0;background:transparent;color:#b5b3c8;margin-top:4px}
+.nav-btn.active,.nav-btn:hover{background:#222034;color:var(--gold)}
+.side-label{font-size:10px;letter-spacing:2px;color:var(--muted);margin:8px 0}
+.history{display:flex;flex-direction:column;gap:5px;overflow:auto}
+.history-item{padding:9px;border-radius:9px;background:transparent;border:0;color:#c8c5d9;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item:hover{background:#1a1928}
+.profile{margin-top:auto;padding:12px;border:1px solid var(--border);border-radius:13px;color:var(--muted);font-size:12px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 25px;border-bottom:1px solid var(--border)}
+.topbar small{color:var(--muted)}
+.pill{border:1px solid #54452a;color:var(--gold);border-radius:30px;padding:7px 11px;font-size:11px}
+.content{width:min(850px,100%);margin:0 auto;padding:30px 22px;flex:1}
+.welcome{text-align:center;padding:7vh 10px 22px}
+.orb{width:72px;height:72px;margin:0 auto 22px;border-radius:24px;display:grid;place-items:center;font-size:35px;background:radial-gradient(circle at 30% 20%,#f7d67d,#a67bdb 65%,#33254d);box-shadow:0 0 55px #a78bfa20}
+h1{font-size:clamp(30px,5vw,47px);letter-spacing:-1.5px;margin:0 0 12px}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--gold),var(--purple));background-clip:text;color:transparent}
+.subtitle{color:var(--muted);line-height:1.7}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:26px 0}
+.suggestion{background:var(--panel);border:1px solid var(--border);color:#f2efff;border-radius:15px;padding:17px;text-align:left;line-height:1.5}
+.suggestion b{display:block;margin-bottom:5px}
+.suggestion small{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:19px;padding:10px 0 24px}
+.message{display:flex;gap:12px;align-items:flex-start;line-height:1.7;overflow-wrap:anywhere}
+.avatar{flex-shrink:0;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#28213c;color:var(--purple)}
+.message.user .avatar{background:#42351c;color:var(--gold)}
+.message-body{padding-top:3px;white-space:pre-wrap;min-width:0}
+.message-body strong{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.composer{position:sticky;bottom:0;padding:14px 20px 22px;background:linear-gradient(transparent,var(--bg) 18%)}
+.composer-inner{max-width:810px;margin:auto;border:1px solid #37334b;background:#14131e;border-radius:17px;padding:10px;display:flex;align-items:flex-end;gap:10px}
+textarea{background:transparent;border:0;color:white;resize:vertical;min-height:42px;max-height:160px;flex:1;padding:10px;outline:none}
+.send{background:var(--gold);color:#17120a;border:0;border-radius:12px;padding:12px 16px;font-weight:800}
+.hint{text-align:center;color:#77758a;font-size:11px;margin-top:10px}
+.screen{position:fixed;inset:0;background:#07070cf5;z-index:5;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}
+.auth-card{width:min(440px,100%);border:1px solid #302b43;background:#11111a;border-radius:23px;padding:27px;box-shadow:0 25px 100px #0008}
+.auth-brand{text-align:center;margin:0 auto 25px}
+.auth-brand .logo{margin:0 auto 13px}
+.auth-brand h2{margin:0 0 8px;font-size:25px}
+.auth-brand p{color:var(--muted);font-size:13px;line-height:1.5}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;background:#090910;border-radius:12px;margin-bottom:20px}
+.tab{border:0;background:transparent;color:var(--muted);padding:12px;border-radius:9px;font-weight:700}
+.tab.active{background:#292338;color:var(--gold)}
+.auth-panel{display:flex;flex-direction:column;gap:10px}
+.auth-btn{width:100%;padding:13px;border-radius:11px;background:#1a1925;color:#fff;border:1px solid #343044;font-weight:600}
+.auth-btn.primary{background:var(--gold);color:#17120a;border-color:var(--gold)}
+.auth-btn.email{background:#29213b;border-color:#4a3b6d}
+.field{width:100%;border:1px solid #393549;background:#090910;color:white;border-radius:10px;padding:13px;margin-bottom:9px}
+.warning{background:#28151d;border:1px solid #5d2a39;color:#ffbdc8;padding:10px;border-radius:10px;text-align:center;font-size:12px}
+.auth-note{font-size:11px;color:#858398;line-height:1.6;text-align:center;margin-top:15px}
+.hidden{display:none!important}
+.notice{font-size:12px;color:#ffca9a;line-height:1.5;padding:10px;border:1px solid #61432d;background:#24190f;border-radius:10px}
+.mobile-menu{display:none}
+@media(max-width:680px){
+ .sidebar{display:none}.mobile-menu{display:inline-block;background:transparent;color:white;border:0;font-size:20px}
+ .topbar{padding:0 14px;height:62px}.content{padding:18px 15px}.welcome{padding-top:5vh}
+ .cards{grid-template-columns:1fr}.composer{padding:10px 10px 16px}
+ .auth-card{padding:21px}.topbar small{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+ <div class="brand"><div class="logo">✦</div><div>StudyMind <span>AI</span></div></div>
+ <button class="new-chat" id="newChat">＋ &nbsp; New chat</button>
+ <div>
+  <div class="side-label">WORKSPACE</div>
+  <button class="nav-btn active" id="chatNav">✧ &nbsp; Verity AI</button>
+  <button class="nav-btn" id="quizNav">▤ &nbsp; Study tools</button>
+ </div>
+ <div>
+  <div class="side-label">RECENT CHATS</div>
+  <div class="history" id="history"></div>
+ </div>
+ <div class="profile" id="profile">◉ &nbsp; Guest mode<br><br>Your chats will NOT be saved.</div>
+</aside>
+<main class="main">
+ <header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px">
+   <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
+   <div><b>Verity AI</b><br><small>Your personal study companion</small></div>
+  </div>
+  <div class="pill">✦ STUDY EDITION 2.0</div>
+ </header>
+ <section class="content">
+  <div class="welcome" id="welcome">
+   <div class="orb">✦</div>
+   <h1>Think smarter.<br><em>Learn better.</em></h1>
+   <p class="subtitle">Hey! I'm Verity, your study companion.<br>What are we learning today?</p>
+   <div class="cards">
+    <button class="suggestion" data-prompt="Explain this maths topic step by step."><b>∑ &nbsp; Maths help</b><small>Understand tricky questions step by step.</small></button>
+    <button class="suggestion" data-prompt="Create a short revision quiz for me. Ask one question at a time."><b>✎ &nbsp; Revision quiz</b><small>Test what you know.</small></button>
+    <button class="suggestion" data-prompt="Help me create a realistic weekly revision timetable. Ask me what subjects I study."><b>◷ &nbsp; Study planner</b><small>Build a revision timetable.</small></button>
+    <button class="suggestion" data-prompt="Teach me a difficult school topic in simple language, with examples."><b>✧ &nbsp; Explain a topic</b><small>Make hard ideas easier to learn.</small></button>
+   </div>
+  </div>
+  <div class="chat" id="chat"></div>
+ </section>
+ <div class="composer">
+  <div class="composer-inner">
+   <textarea id="prompt" rows="1" placeholder="Ask Verity anything about your studies…" aria-label="Message Verity"></textarea>
+   <button class="send" id="send">↑</button>
+  </div>
+  <div class="hint">Verity can make mistakes. Check important schoolwork and answers.</div>
+ </div>
+</main>
+</div>
+
+<div class="screen" id="authScreen">
+ <div class="auth-card">
+  <div class="auth-brand">
+   <div class="logo">✦</div>
+   <h2>Welcome to <span style="color:var(--gold)">StudyMind</span></h2>
+   <p>Your next level of learning starts here.</p>
+  </div>
+  <div class="tabs">
+   <button class="tab active" id="signInTab">SIGN IN</button>
+   <button class="tab" id="signUpTab">SIGN UP</button>
+  </div>
+  <div class="auth-panel" id="signInPanel">
+   <button class="auth-btn email" id="emailToggle">✉ &nbsp; Sign In with Email</button>
+   <div class="hidden" id="emailForm">
+    <form id="emailLogin">
+     <input class="field" id="emailInput" type="email" placeholder="Email address" autocomplete="email" required>
+     <input class="field" id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" required>
+     <button class="auth-btn primary" type="submit">Sign In</button>
+    </form>
+    <div class="notice hidden" id="emailNotice"></div>
+   </div>
+   <button class="auth-btn" id="guestSignIn">Continue as Guest</button>
+   <div class="warning">Your chats will NOT be saved.</div>
+  </div>
+  <div class="auth-panel hidden" id="signUpPanel">
+   <button class="auth-btn" data-provider="google">🌐 &nbsp; Sign Up with Google</button>
+   <button class="auth-btn" data-provider="apple">● &nbsp; Sign Up with Apple</button>
+   <button class="auth-btn email" data-provider="chatgpt">✦ &nbsp; Sign Up with ChatGPT</button>
+   <div class="notice hidden" id="providerNotice"></div>
+  </div>
+  <div class="auth-note">Account sign-in providers and AI services must be securely configured before they can be used. Guest chats stay in this session only.</div>
+ </div>
+</div>
+
+<script>
+(() => {
+ const $ = id => document.getElementById(id);
+ let chats = [], current = null, guest = true, busy = false;
+ const chatBox = $("chat"), promptBox = $("prompt");
+
+ function showTab(tab) {
+  const signIn = tab === "in";
+  $("signInTab").classList.toggle("active",signIn);
+  $("signUpTab").classList.toggle("active",!signIn);
+  $("signInPanel").classList.toggle("hidden",!signIn);
+  $("signUpPanel").classList.toggle("hidden",signIn);
+ }
+ $("signInTab").onclick = () => showTab("in");
+ $("signUpTab").onclick = () => showTab("up");
+ $("emailToggle").onclick = () => $("emailForm").classList.toggle("hidden");
+
+ function startGuest() {
+  guest = true;
+  $("profile").innerHTML = "◉ &nbsp; Guest mode<br><br>Your chats will NOT be saved.";
+  $("authScreen").classList.add("hidden");
+  newChat();
+ }
+ $("guestSignIn").onclick = startGuest;
+
+ // OAuth must be connected to a real identity provider; never pretend login succeeded.
+ document.querySelectorAll("[data-provider]").forEach(button => {
+  button.onclick = () => {
+   const name = button.dataset.provider;
+   $("providerNotice").textContent =
+    name === "chatgpt"
+     ? "ChatGPT account sign-in is not automatically available to third-party apps. Configure a supported authentication flow before enabling this button."
+     : name[0].toUpperCase()+name.slice(1)+" sign-in needs real OAuth credentials and a configured authentication backend.";
+   $("providerNotice").classList.remove("hidden");
+  };
+ });
+
+ $("emailLogin").onsubmit = event => {
+  event.preventDefault();
+  $("emailNotice").textContent = "Email login is not connected yet. Configure a secure authentication backend before using real accounts.";
+  $("emailNotice").classList.remove("hidden");
+ };
+
+ function newChat() {
+  current = {id:Date.now(),title:"New chat",messages:[]};
+  if(!guest) chats.unshift(current);
+  chatBox.innerHTML = "";
+  $("welcome").classList.remove("hidden");
+  renderHistory();
+  promptBox.value = "";
+ }
+ $("newChat").onclick = newChat;
+
+ function renderHistory() {
+  const history = $("history");
+  history.innerHTML = "";
+  chats.forEach(item => {
+   const button = document.createElement("button");
+   button.className = "history-item";
+   button.textContent = "◦  "+item.title;
+   button.onclick = () => {
+    current = item;
+    chatBox.innerHTML = "";
+    $("welcome").classList.toggle("hidden",item.messages.length > 0);
+    item.messages.forEach(m => addMessage(m.role,m.text,false));
+   };
+   history.appendChild(button);
+  });
+ }
+
+ function addMessage(role,text,save=true) {
+  $("welcome").classList.add("hidden");
+  const row = document.createElement("div");
+  row.className = "message "+(role==="user"?"user":"assistant");
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = role==="user"?"Y":"✦";
+  const body = document.createElement("div");
+  body.className = "message-body";
+  const label = document.createElement("strong");
+  label.textContent = role==="user"?"YOU":"VERITY";
+  const content = document.createElement("div");
+  content.textContent = text;
+  body.append(label,content);
+  row.append(avatar,body);
+  chatBox.appendChild(row);
+  if(save && current) {
+   current.messages.push({role,text});
+   if(role==="user" && current.title==="New chat") {
+    current.title=text.slice(0,32)+(text.length>32?"…":"");
+    renderHistory();
+   }
+  }
+  row.scrollIntoView({behavior:"smooth",block:"nearest"});
+  return content;
+ }
+
+ async function sendMessage(text) {
+  text = text.trim();
+  if(!text || busy) return;
+  if(!current) newChat();
+  promptBox.value = "";
+  addMessage("user",text);
+  busy = true;
+  $("send").disabled = true;
+  const reply = addMessage("assistant","Verity needs a configured AI backend to answer this message.");
+  try {
+   // Set up your own server endpoint, e.g. /api/chat.
+   // The server must call the AI provider and keep API keys secret.
+   const response = await fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:text})
+   });
+   if(!response.ok) throw new Error("AI backend unavailable");
+   const data = await response.json();
+   if(typeof data.reply !== "string" || !data.reply.trim()) throw new Error("Invalid AI response");
+   reply.textContent = data.reply;
+   if(current) {
+    const last = current.messages[current.messages.length-1];
+    if(last && last.role==="assistant") last.text=data.reply;
+   }
+  } catch(error) {
+   reply.textContent = "I'm not connected to the AI server yet. The chat interface works, but real AI replies need a secure backend at /api/chat. Don't put API keys in this HTML file.";
+   if(current) {
+    const last = current.messages[current.messages.length-1];
+    if(last && last.role==="assistant") last.text=reply.textContent;
+   }
+  } finally {
+   busy = false;
+   $("send").disabled = false;
+   promptBox.focus();
+  }
+ }
+
+ $("send").onclick = () => sendMessage(promptBox.value);
+ promptBox.addEventListener("keydown",event => {
+  if(event.key==="Enter" && !event.shiftKey) {
+   event.preventDefault();
+   sendMessage(promptBox.value);
+  }
+ });
+ document.querySelectorAll("[data-prompt]").forEach(button => {
+  button.onclick = () => sendMessage(button.dataset.prompt);
+ });
+ $("quizNav").onclick = () => sendMessage("Help me start a revision quiz. Ask what subject I want to practise.");
+ $("chatNav").onclick = () => { if(!current || current.messages.length) newChat(); };
+ $("mobileMenu").onclick = () => {
+  $("authScreen").classList.remove("hidden");
+  showTab("in");
+ };
+ newChat();
+})();
+</script>
+</body>
+</html>
+
+
